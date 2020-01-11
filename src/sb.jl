@@ -1,5 +1,7 @@
 module sb
 
-greet() = print("Hello World!")
+export my_f
+
+include("sbmodel.jl")
 
 end # module
