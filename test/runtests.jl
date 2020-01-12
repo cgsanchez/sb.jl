@@ -1,7 +1,5 @@
-using sb
-using Test
 
-@testset "sb.jl" begin
-    @test my_f(2,1) == 7
-    @test my_f(2,3) == 13
-end
+using SafeTestsets
+
+    @time @safetestset "Constant Matrices Tests" begin include("matrices.jl") end
+    @time @safetestset "SB Model tests" begin include("sbmodel.jl") end

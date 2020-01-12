@@ -1,7 +1,9 @@
 module sb
 
-export my_f
+export OhmicSBParams, SBModel
 
-include("sbmodel.jl")
+include("constmatrices.jl")
+
+include("ohmicsb.jl")
 
 end # module
