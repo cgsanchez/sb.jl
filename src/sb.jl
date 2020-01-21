@@ -1,9 +1,14 @@
 module sb
 
-export OhmicSBParams, SBModel
+export OhmicSBParams, SBModel, 
+       EhrenfestOps
 
-include("constmatrices.jl")
+include("physical_constants.jl")
+
+include("matrices.jl")
 
 include("ohmicsb.jl")
+
+include("ehrenfest.jl")
 
 end # module
