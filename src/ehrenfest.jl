@@ -27,6 +27,8 @@ Leapfrog bootstrap of data
 function ehbootstrap!(ops :: EhrenfestOps, oldops :: EhrenfestOps,
                       dotops :: EhrenfestOps, dt :: Float64)
     oldops.ρ .= ops.ρ - dt * dotops.ρ
+    oldops.p .= ops.p - dt * dotops.p
+    oldops.q .= ops.q - dt * dotops.q
 end
 
 """
@@ -37,16 +39,22 @@ Leapfrog step forward
 function ehforward!(ops :: EhrenfestOps, oldops :: EhrenfestOps,
                     dotops :: EhrenfestOps, dt :: Float64)
     oldops.ρ .= oldops.ρ + 2 * dt * dotops.ρ
+    oldops.p .= oldops.p + 2 * dt * dotops.p
+    oldops.q .= oldops.q + 2 * dt * dotops.q
 end
 
 """
 
-Leapfrog Ehrenfest claculate EOM RHS
+Leapfrog Ehrenfest calculate EOM RHS
 
 """
 function ehcalcdots!(dotops :: EhrenfestOps, ops :: EhrenfestOps,
                     dt :: Float64, sbm :: SBModel)
     dotops.ρ .= - iohbar * comm(H(sbm,ops.q,ops.p),ops.ρ)
+    for i in 1:ops.No
+        dotops.p[i] = real(tr(F(sbm,ops.q,i)*ops.ρ))
+        dotops.q[i] = ops.p[i]
+    end
 end
 
 """

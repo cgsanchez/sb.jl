@@ -1,46 +1,3 @@
-using sb
-
-sbp = OhmicSBParams(No = 5000, ωm = 300)
-
-sbm = SBModel(sbp)
-
-omegarange = range(0,sbp.ωm*1.2,length=1001)
-
-dos = sb.densityofstates(sbm.ωs,omegarange)
-
-teodos = sb.ρosc(convert(Vector{Float64},omegarange),sbp)
-
-using Plots
-
-plot(omegarange,dos)
-
-findmax(dos)
-
-omegarange[19]
-
-plot!(omegarange,teodos)
-
-specden = sb.spectraldensity(sbm.cs,sbm.ωs,omegarange)
-teospecden = sb.ohmicJ0(omegarange,sbp)
-
-plot(omegarange,specden)
-plot!(omegarange,teospecden)
-
-findmax(teospecden)[1]
-findmax(specden)
-
-omegarange[105]
-
-sum(abs.(specden[200:600]-teospecden[200:600]))
-sum(abs.(dos[200:600]-teodos[200:600]))
-
-plot(omegarange[200:600],specden[200:600]-teospecden[200:600])
-plot!(omegarange[200:600],dos[200:600]-teodos[200:600])
-
-# This is testing to construct Ehrenfest
-
-Pkg.activate(".")
-
 using sb, LinearAlgebra, Statistics
 
 # Create a model
@@ -86,32 +43,4 @@ end
 
 ts, energies = integrate(2000,0.001)
 
-mean(energies) < 0.003
-
-
-
-
-
-
-
-
-
-
-
-# Strange stuff
-
-function this()
-    a = 1
-    b = 2
-    for i in 1:5
-        println(i," ",a,)
-        (a,b) = (b,a)
-    end
-end
-
-this()
-
-for i in 1:5
-    println(a)
-    a = 5
-end
+@test mean(energies) < 0.003

@@ -6,3 +6,11 @@ const σx = [[0 1]; [1 0]]
 const σy = [[0 -1im]; [1im 0]]
 const zm = [[0 0]; [0 0]]
 const eye = [[1 0]; [0 1]]
+
+function comm(A,B)
+    A*B-B*A
+end
+
+function acomm(A,B)
+    A*B+B*A
+end

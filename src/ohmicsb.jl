@@ -129,7 +129,7 @@ Force operator for an Ohmic Spin Boson Model
 
 """
 function F(sbm :: SBModel, q :: Vector{Float64}, nu :: Integer)
-    F = - eye * sbm.ωs[nu] * q[nu] - σz * sbm.cs[nu] * q[nu]
+    F = - eye * sbm.ωs[nu]^2 * q[nu] - σz * sbm.cs[nu]
     return F
 end
 
@@ -140,7 +140,7 @@ Second order derivative operator for an Ohmic Spin Boson Model
 """
 function K(sbm :: SBModel, q :: Vector{Float64}, nu :: Integer, nup :: Integer)
     if nu == nup
-        K = eye * sbm.ωs[nu] + σz * sbm.cs[nu]
+        K = eye * sbm.ωs[nu]^2 + σz * sbm.cs[nu]
     else
         K = zm
     end
