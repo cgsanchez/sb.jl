@@ -1,2 +1,2 @@
-hbar = 1
-iohbar = 1im / hbar
+HBAR = 1
+IOHBAR = 1im / HBAR

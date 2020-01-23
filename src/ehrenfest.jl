@@ -12,16 +12,15 @@ struct EhrenfestOps
     p  :: Vector{Float64}
     q  :: Vector{Float64}
     function EhrenfestOps(ρ0, sbm :: SBModel)
-        ρ = ρ0
         p = zeros(Float64,sbm.No)
         q = zeros(Float64,sbm.No)
-        new(sbm.No,ρ,p,q)
+        new(sbm.No,ρ0,p,q)
     end
 end
 
 """
 
-Leapfrog bootstrap of data
+Leapfrog bootstrap of data (Ehrenfest)
 
 """
 function ehbootstrap!(ops :: EhrenfestOps, oldops :: EhrenfestOps,
@@ -33,7 +32,7 @@ end
 
 """
 
-Leapfrog step forward
+Leapfrog step forward (Ehrenfest)
 
 """
 function ehforward!(ops :: EhrenfestOps, oldops :: EhrenfestOps,
@@ -50,7 +49,7 @@ Leapfrog Ehrenfest calculate EOM RHS
 """
 function ehcalcdots!(dotops :: EhrenfestOps, ops :: EhrenfestOps,
                     dt :: Float64, sbm :: SBModel)
-    dotops.ρ .= - iohbar * comm(H(sbm,ops.q,ops.p),ops.ρ)
+    dotops.ρ .= - IOHBAR * comm(H(sbm,ops.q,ops.p),ops.ρ)
     for i in 1:ops.No
         dotops.p[i] = real(tr(F(sbm,ops.q,i)*ops.ρ))
         dotops.q[i] = ops.p[i]
