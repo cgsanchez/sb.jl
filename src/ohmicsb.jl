@@ -32,13 +32,13 @@ struct SBModel
         @unpack No, Δ, ϵ, ωm, ωc = sbp
         Δ = sbp.Δ
         ϵ = sbp.ϵ
-        ω = zeros(Float64,No)
-        c = zeros(Float64,No)
+        ωs = zeros(Float64,No)
+        cs = zeros(Float64,No)
         for j=1:No
-            ω[j] = ωm - ωc * log((j - exp(ωm/ωc)*j + exp(ωm/ωc)*No)/No)
-            c[j] = sqrt((2/π)*ω[j]*ohmicJ0(ω[j],sbp)/ρosc(ω[j],sbp))
+            ωs[j] = ωm - ωc * log((j - exp(ωm/ωc)*j + exp(ωm/ωc)*No)/No)
+            cs[j] = sqrt((2/π)*ωs[j]*ohmicJ0(ωs[j],sbp)/ρosc(ωs[j],sbp))
         end
-        new(No,Δ,ϵ,ω,c)
+        new(No,Δ,ϵ,ωs,cs)
     end
 end
 
@@ -70,7 +70,7 @@ Calculate thermal ocupation numbers for the oscillators
 function thermalns(sbp :: OhmicSBParams, sbm :: SBModel)
     N = Vector{Float64}(undef,sbm.No)
     for i in 1:sbm.No
-        N[i] = 1.0 / (exp(sbm.ωs[i] * sbp.β) - 1.0)
+        N[i] = 1.0 / (exp(HBAR * sbm.ωs[i] * sbp.β) - 1.0)
     end
     return N
 end
@@ -118,7 +118,8 @@ Hamiltonian for an Ohmic Spin Boson Model
 function H(sbm :: SBModel, q :: Vector{Float64}, p :: Vector{Float64})
     H = sbm.ϵ * σz + sbm.Δ * σx
     for nu = 1:sbm.No
-        H += eye * (p[nu]^2 + sbm.ωs[nu]^2 * q[nu]^2) / 2 + σz * sbm.cs[nu] * q[nu]
+#        H += eye * (p[nu]^2 + sbm.ωs[nu]^2 * q[nu]^2) / 2 + σz * sbm.cs[nu] * q[nu]
+        H += eye * sbm.ωs[nu]^2 * q[nu]^2 / 2 + σz * sbm.cs[nu] * q[nu]
     end
     return H
 end
@@ -140,7 +141,7 @@ Second order derivative operator for an Ohmic Spin Boson Model
 """
 function K(sbm :: SBModel, q :: Vector{Float64}, nu :: Integer, nup :: Integer)
     if nu == nup
-        K = eye * sbm.ωs[nu]^2 + σz * sbm.cs[nu]
+        K = eye * sbm.ωs[nu]^2
     else
         K = zm
     end

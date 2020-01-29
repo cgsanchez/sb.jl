@@ -5,3 +5,4 @@ using SafeTestsets
     @time @safetestset "SB Model tests" begin include("sbmodel.jl") end
     @time @safetestset "Ehrenfest dynamics test" begin include("ehrenfest.jl") end
     @time @safetestset "ECEID dynamics test" begin include("ECEID.jl") end
+    @time @safetestset "CEID dynamics test" begin include("ECEID.jl") end
