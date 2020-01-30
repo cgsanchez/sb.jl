@@ -20,7 +20,7 @@ struct ECEIDOps
         Cc = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
         As = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
         Ac = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
-        N = zeros(Float64,sbm.No)
+        N = sb.thermalns(sbm)
         p = zeros(Float64,sbm.No)
         q = zeros(Float64,sbm.No)
         for i in 1:sbm.No
@@ -28,7 +28,6 @@ struct ECEIDOps
             Cc[i] = zeros(ComplexF64,2,2)
             Ac[i] = zeros(ComplexF64,2,2)
             As[i] = zeros(ComplexF64,2,2)
-            N[i] = 0.0
         end
         new(sbm.No,ρ0,Cs,Cc,As,Ac,N,p,q)
     end
