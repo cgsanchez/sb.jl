@@ -64,3 +64,34 @@ Ehrenfest total energy
 function ehenergy(ops :: EhrenfestOps, sbm :: SBModel)
     return real(tr(H(sbm,ops.q,ops.p) * ops.ρ))
 end
+
+"""
+
+This function integrates the Ehrenfest EOMs starting from the
+initial condition provided in ops for nsteps of dt.
+The store! callback function is called at every timestep.
+
+"""
+function RunEhrenfest!(sbm, ops, nsteps, dt, store!, storage)
+
+    dotops = EhrenfestOps(sb.zm,sbm)
+    oldops = EhrenfestOps(sb.zm,sbm)
+
+    # Bootstrap the integrator
+    ehcalcdots!(dotops, ops ,dt , sbm)
+    ehbootstrap!(ops,oldops,dotops,dt)
+
+    # call results storage function at t = 0
+    t = 0.0
+    store!(storage,t,ops,sbm)
+
+    # integrate
+    for i in 1:nsteps-1
+        t = i*dt
+        ehcalcdots!(dotops,ops,dt,sbm)
+        ehforward!(ops,oldops,dotops,dt)
+        (ops,oldops) = (oldops,ops)
+        store!(storage,t,ops,sbm)
+    end
+    return 1
+end
