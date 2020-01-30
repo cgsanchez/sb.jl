@@ -26,19 +26,21 @@ struct SBModel
     No :: Integer
     Δ :: Float64
     ϵ :: Float64
+    β :: Float64
     ωs :: Vector{Float64}
     cs :: Vector{Float64}
     function SBModel(sbp::OhmicSBParams)
         @unpack No, Δ, ϵ, ωm, ωc = sbp
         Δ = sbp.Δ
         ϵ = sbp.ϵ
+        β = sbp.β
         ωs = zeros(Float64,No)
         cs = zeros(Float64,No)
         for j=1:No
             ωs[j] = ωm - ωc * log((j - exp(ωm/ωc)*j + exp(ωm/ωc)*No)/No)
             cs[j] = sqrt((2/π)*ωs[j]*ohmicJ0(ωs[j],sbp)/ρosc(ωs[j],sbp))
         end
-        new(No,Δ,ϵ,ωs,cs)
+        new(No,Δ,ϵ,β,ωs,cs)
     end
 end
 
@@ -67,10 +69,10 @@ end
 Calculate thermal ocupation numbers for the oscillators
 
 """
-function thermalns(sbp :: OhmicSBParams, sbm :: SBModel)
+function thermalns(sbm :: SBModel)
     N = Vector{Float64}(undef,sbm.No)
     for i in 1:sbm.No
-        N[i] = 1.0 / (exp(HBAR * sbm.ωs[i] * sbp.β) - 1.0)
+        N[i] = 1.0 / (exp(HBAR * sbm.ωs[i] * sbm.β) - 1.0)
     end
     return N
 end
@@ -89,9 +91,9 @@ end
 Calculate the oscillator density of states for a model
 
 """
-function densityofstates(values,range;σ=1.5)
+function densityofstates(sbm,range;σ=1.5)
     dos = zeros(size(range))
-    for x in values
+    for x in sbm.ωs
         dos += gaussian.(σ,range .- x)
     end
     return dos
@@ -102,10 +104,10 @@ end
 Calculate spectral density for a model
 
 """
-function spectraldensity(cs,ωs,range;σ=1.5)
+function spectraldensity(sbm,range;σ=1.5)
     sd = zeros(size(range))
-    for (i,ω) in enumerate(ωs)
-        sd += cs[i]^2*gaussian.(σ,range .- ω)/ωs[i]
+    for (i,ω) in enumerate(sbm.ωs)
+        sd += sbm.cs[i]^2*gaussian.(σ,range .- ω)/sbm.ωs[i]
     end
     return pi*sd/2
 end
