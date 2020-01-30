@@ -42,6 +42,6 @@ function integrate(nsteps,dt)
     return ts,energies
 end
 
-ts, energies = integrate(2000,0.001)
+ts, energies = integrate(200,0.001)
 
 @test mean(energies .- energies[1]) < 1e-13

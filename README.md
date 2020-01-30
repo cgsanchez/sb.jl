@@ -1,4 +1,4 @@
-# sb
+# sb.jl
 
 [![Build Status](https://travis-ci.com/cgsanchez/sb.jl.svg?branch=master)](https://travis-ci.com/cgsanchez/sb.jl)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/cgsanchez/sb.jl?svg=true)](https://ci.appveyor.com/project/cgsanchez/sb-jl)
