@@ -112,3 +112,35 @@ function ECEIDenergy(ops :: ECEIDOps, sbm :: SBModel)
     end
     return eenergy+oenergy+intenergy
 end
+
+"""
+
+This function integrates the ECEID EOMs starting from the
+initial condition provided in ops for nsteps of dt.
+The store! callback function is called at every timestep.
+
+"""
+function RunECEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false)
+
+    dotops = ECEIDOps(sb.zm,sbm)
+    oldops = ECEIDOps(sb.zm,sbm)
+
+    # Bootstrap the integrator
+    sb.ECEIDcalcdots!(dotops, ops , dt , sbm; thermostat = thermostat)
+    sb.ECEIDbootstrap!(ops,oldops,dotops,dt)
+
+    # call results storage function at t = 0
+    t = 0.0
+    store!(storage,t,ops,sbm)
+
+    # integrate
+    for i in 1:nsteps-1
+        t = i*dt
+        sb.ECEIDcalcdots!(dotops,ops,dt,sbm; thermostat = thermostat)
+        sb.ECEIDforward!(ops,oldops,dotops,dt)
+        (ops,oldops) = (oldops,ops)
+        store!(storage,t,ops,sbm)
+    end
+
+    return 1
+end

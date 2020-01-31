@@ -2,7 +2,7 @@ module sb
 
 export OhmicSBParams, SBModel,
        EhrenfestOps, RunEhrenfest!,
-       ECEIDOps,
+       ECEIDOps, RunECEID!,
        CEIDOps
 
 
