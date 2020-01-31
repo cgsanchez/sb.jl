@@ -3,7 +3,7 @@ module sb
 export OhmicSBParams, SBModel,
        EhrenfestOps, RunEhrenfest!,
        ECEIDOps, RunECEID!,
-       CEIDOps
+       CEIDOps, RunCEID!
 
 
 include("physical_constants.jl")
