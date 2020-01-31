@@ -95,7 +95,6 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
         for νp in 1:ops.No
             fbar[ν] += - real(tr(K(sbm,ops.q,ν,νp)*ops.μ[νp]))
         end
-        fbar[ν] =
         dotops.p[ν] = fbar[ν]
         dotops.q[ν] = ops.p[ν]
     end
@@ -194,8 +193,8 @@ The store! callback function is called at every timestep.
 """
 function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false)
 
-    dotops = CEIDOps(sb.zm,sbm)
-    oldops = CEIDOps(sb.zm,sbm)
+    dotops = CEIDOps(sb.zm(),sbm)
+    oldops = CEIDOps(sb.zm(),sbm)
 
     # Bootstrap the integrator
     sb.CEIDcalcdots!(dotops, ops , dt , sbm; thermostat = thermostat)

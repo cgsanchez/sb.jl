@@ -122,8 +122,8 @@ The store! callback function is called at every timestep.
 """
 function RunECEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false)
 
-    dotops = ECEIDOps(sb.zm,sbm)
-    oldops = ECEIDOps(sb.zm,sbm)
+    dotops = ECEIDOps(sb.zm(),sbm)
+    oldops = ECEIDOps(sb.zm(),sbm)
 
     # Bootstrap the integrator
     sb.ECEIDcalcdots!(dotops, ops , dt , sbm; thermostat = thermostat)

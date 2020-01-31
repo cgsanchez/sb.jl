@@ -3,8 +3,8 @@ module sb
 export OhmicSBParams, SBModel,
        EhrenfestOps, RunEhrenfest!,
        ECEIDOps, RunECEID!,
-       CEIDOps, RunCEID!
-
+       CEIDOps, RunCEID!,
+       H, F, K, comm, acomm, IOHBAR
 
 include("physical_constants.jl")
 

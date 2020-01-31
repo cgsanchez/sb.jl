@@ -74,8 +74,8 @@ The store! callback function is called at every timestep.
 """
 function RunEhrenfest!(sbm, ops, nsteps, dt, store!, storage)
 
-    dotops = EhrenfestOps(sb.zm,sbm)
-    oldops = EhrenfestOps(sb.zm,sbm)
+    dotops = EhrenfestOps(sb.zm(),sbm)
+    oldops = EhrenfestOps(sb.zm(),sbm)
 
     # Bootstrap the integrator
     ehcalcdots!(dotops, ops ,dt , sbm)
