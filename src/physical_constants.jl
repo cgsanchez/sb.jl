@@ -1,2 +1,2 @@
-HBAR = 1
-IOHBAR = 1im / HBAR
+const HBAR = 1.0
+const IOHBAR = (0.0 + 1.0im) / HBAR

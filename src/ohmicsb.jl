@@ -14,7 +14,7 @@ Parameter container for an Ohmic Spin Boson Model
     ωc = 7.5 * Δ
     ωm = 5 * ωc
     β = 1.0
-    No :: Integer = 50
+    No :: Int64 = 50
 end
 
 """
@@ -23,7 +23,7 @@ structure container for an Ohmic Spin Boson Model
 
 """
 struct SBModel
-    No :: Integer
+    No :: Int64
     Δ :: Float64
     ϵ :: Float64
     β :: Float64
@@ -131,7 +131,7 @@ end
 Force operator for an Ohmic Spin Boson Model
 
 """
-function F(sbm :: SBModel, q :: Vector{Float64}, nu :: Integer)
+function F(sbm :: SBModel, q :: Vector{Float64}, nu :: Int64)
     F = - eye() * sbm.ωs[nu]^2 * q[nu] - σz() * sbm.cs[nu]
     return F
 end
@@ -141,7 +141,7 @@ end
 Second order derivative operator for an Ohmic Spin Boson Model
 
 """
-function K(sbm :: SBModel, q :: Vector{Float64}, nu :: Integer, nup :: Integer)
+function K(sbm :: SBModel, q :: Vector{Float64}, nu :: Int64, nup :: Int64)
     if nu == nup
         K = eye() * sbm.ωs[nu]^2
     else

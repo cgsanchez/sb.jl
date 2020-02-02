@@ -6,7 +6,7 @@ Structure to hold data for ECEID dynamics
 
 """
 struct ECEIDOps
-    No :: Integer
+    No :: Int64
     ρ  :: Array{Complex{Float64},2}
     Cs :: Vector{Array{Complex{Float64},2}}
     Cc :: Vector{Array{Complex{Float64},2}}

@@ -8,7 +8,7 @@ Structure to hold data for CEID dynamics
 
 """
 struct CEIDOps
-    No :: Integer
+    No :: Int64
     ρ  :: Array{Complex{Float64},2}
     μ  :: Vector{Array{Complex{Float64},2}}
     λ  :: Vector{Array{Complex{Float64},2}}

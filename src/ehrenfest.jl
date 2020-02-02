@@ -7,7 +7,7 @@ Structure to hold data for Ehrenfest dynamics
 
 """
 struct EhrenfestOps
-    No :: Integer
+    No :: Int64
     ρ  :: Matrix{Complex{Float64}}
     p  :: Vector{Float64}
     q  :: Vector{Float64}
