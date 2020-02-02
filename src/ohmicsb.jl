@@ -117,11 +117,11 @@ end
 Hamiltonian for an Ohmic Spin Boson Model
 
 """
-function H(sbm :: SBModel, q :: Vector{Float64}, p :: Vector{Float64})
-    H = sbm.ϵ * σz() + sbm.Δ * σx()
+@inline function H(sbm :: SBModel, q :: Vector{Float64}, p :: Vector{Float64})
+    H = sbm.ϵ * σz + sbm.Δ * σx
     for nu = 1:sbm.No
-#        H += eye() * (p[nu]^2 + sbm.ωs[nu]^2 * q[nu]^2) / 2 + σz() * sbm.cs[nu] * q[nu]
-        H += eye() * sbm.ωs[nu]^2 * q[nu]^2 / 2 + σz() * sbm.cs[nu] * q[nu]
+#        H += eye * (p[nu]^2 + sbm.ωs[nu]^2 * q[nu]^2) / 2 + σz * sbm.cs[nu] * q[nu]
+        H += eye * sbm.ωs[nu]^2 * q[nu]^2 / 2 + σz * sbm.cs[nu] * q[nu]
     end
     return H
 end
@@ -131,8 +131,8 @@ end
 Force operator for an Ohmic Spin Boson Model
 
 """
-function F(sbm :: SBModel, q :: Vector{Float64}, nu :: Int64)
-    F = - eye() * sbm.ωs[nu]^2 * q[nu] - σz() * sbm.cs[nu]
+@inline function F(sbm :: SBModel, q :: Vector{Float64}, nu :: Int64)
+    F = - eye * sbm.ωs[nu]^2 * q[nu] - σz * sbm.cs[nu]
     return F
 end
 
@@ -141,10 +141,10 @@ end
 Second order derivative operator for an Ohmic Spin Boson Model
 
 """
-function K(sbm :: SBModel, q :: Vector{Float64}, nu :: Int64, nup :: Int64)
+@inline function K(sbm :: SBModel, q :: Vector{Float64}, nu :: Int64, nup :: Int64)
     if nu == nup
-        K = eye() * sbm.ωs[nu]^2
+        K = eye * sbm.ωs[nu]^2
     else
-        K = zm()
+        K = zm
     end
 end

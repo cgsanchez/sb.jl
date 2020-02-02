@@ -19,6 +19,8 @@ struct CEIDOps
     q  :: Vector{Float64}
     ke :: Vector{Float64}
     function CEIDOps(ρ0, sbm :: SBModel)
+        ρ = zeros(ComplexF64,2,2)
+        ρ .= ρ0
         μ = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
         λ = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
         CRR = zeros(Float64,sbm.No,sbm.No)
@@ -36,7 +38,7 @@ struct CEIDOps
              CPP[ν,ν] = (nphon+0.5) * HBAR * sbm.ωs[ν]
              CRR[ν,ν] = (nphon+0.5) * HBAR / sbm.ωs[ν]
          end
-        new(sbm.No,ρ0,μ,λ,CRR,CPR,CPP,p,q,ke)
+        new(sbm.No,ρ,μ,λ,CRR,CPR,CPP,p,q,ke)
     end
 end
 
@@ -88,6 +90,7 @@ Leapfrog CEID calculate EOM RHS
 function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
                     dt :: Float64, sbm :: SBModel; thermostat = false)
 
+@inbounds begin
     # Time derivatives of generalized coordinates and momenta ------------------
     fbar = zeros(Float64,sbm.No)
     for ν in 1:ops.No
@@ -169,6 +172,7 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
     #---------------------------------------------------------------------------
 
 end
+end
 
 """
 
@@ -193,8 +197,8 @@ The store! callback function is called at every timestep.
 """
 function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false)
 
-    dotops = CEIDOps(sb.zm(),sbm)
-    oldops = CEIDOps(sb.zm(),sbm)
+    dotops = CEIDOps(zm,sbm)
+    oldops = CEIDOps(zm,sbm)
 
     # Bootstrap the integrator
     sb.CEIDcalcdots!(dotops, ops , dt , sbm; thermostat = thermostat)

@@ -12,9 +12,11 @@ struct EhrenfestOps
     p  :: Vector{Float64}
     q  :: Vector{Float64}
     function EhrenfestOps(ρ0, sbm :: SBModel)
+        ρ = zeros(ComplexF64,2,2)
+        ρ .= ρ0
         p = zeros(Float64,sbm.No)
         q = zeros(Float64,sbm.No)
-        new(sbm.No,ρ0,p,q)
+        new(sbm.No,ρ,p,q)
     end
 end
 
@@ -74,8 +76,8 @@ The store! callback function is called at every timestep.
 """
 function RunEhrenfest!(sbm, ops, nsteps, dt, store!, storage)
 
-    dotops = EhrenfestOps(sb.zm(),sbm)
-    oldops = EhrenfestOps(sb.zm(),sbm)
+    dotops = EhrenfestOps(zm,sbm)
+    oldops = EhrenfestOps(zm,sbm)
 
     # Bootstrap the integrator
     ehcalcdots!(dotops, ops ,dt , sbm)

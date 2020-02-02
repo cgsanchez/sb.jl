@@ -16,6 +16,8 @@ struct ECEIDOps
     p  :: Vector{Float64}
     q  :: Vector{Float64}
     function ECEIDOps(ρ0, sbm :: SBModel)
+        ρ = zeros(ComplexF64,2,2)
+        ρ .= ρ0
         Cs = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
         Cc = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
         As = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
@@ -29,7 +31,7 @@ struct ECEIDOps
             Ac[i] = zeros(ComplexF64,2,2)
             As[i] = zeros(ComplexF64,2,2)
         end
-        new(sbm.No,ρ0,Cs,Cc,As,Ac,N,p,q)
+        new(sbm.No,ρ,Cs,Cc,As,Ac,N,p,q)
     end
 end
 
@@ -122,8 +124,8 @@ The store! callback function is called at every timestep.
 """
 function RunECEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false)
 
-    dotops = ECEIDOps(sb.zm(),sbm)
-    oldops = ECEIDOps(sb.zm(),sbm)
+    dotops = ECEIDOps(zm,sbm)
+    oldops = ECEIDOps(zm,sbm)
 
     # Bootstrap the integrator
     sb.ECEIDcalcdots!(dotops, ops , dt , sbm; thermostat = thermostat)
