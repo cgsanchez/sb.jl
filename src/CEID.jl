@@ -166,7 +166,9 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
     dotops.ke[1] = 0.0
     for ν in 1:ops.No
         for νp in 1:ops.No
-            dotops.ke[1] += real(tr(K(sbm,ops.q,ν,νp)*ops.ρ)) * ops.CPR[ν,νp] + real(0.5 * IOHBAR * ops.CRR[νp,ν] * tr(K(sbm,ops.q,ν,νp)*comm(H(sbm,ops.q,ops.p),ops.ρ)))
+            dotops.ke[1] += real(tr(K(sbm,ops.q,ν,νp)*ops.ρ)) * ops.CPR[ν,νp] +
+                            real(0.5 * IOHBAR * ops.CRR[νp,ν] *
+                            tr(K(sbm,ops.q,ν,νp)*comm(H(sbm,ops.q,ops.p),ops.ρ)))
         end
     end
     #---------------------------------------------------------------------------
