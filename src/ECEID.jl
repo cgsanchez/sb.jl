@@ -41,7 +41,7 @@ Leapfrog bootstrap of data (ECEID)
 function ECEIDbootstrap!(ops :: ECEIDOps, oldops :: ECEIDOps,
                       dotops :: ECEIDOps, dt :: Float64)
     oldops.ρ = ops.ρ - dt * dotops.ρ
-    for i in 1:ops.No
+    Threads.@threads for i in 1:ops.No
         oldops.Cs[i] = ops.Cs[i] - dt * dotops.Cs[i]
         oldops.Cc[i] = ops.Cc[i] - dt * dotops.Cc[i]
         oldops.As[i] = ops.As[i] - dt * dotops.As[i]
@@ -63,7 +63,7 @@ function ECEIDforward!(ops :: ECEIDOps, oldops :: ECEIDOps,
         oldops.Cc[i] = oldops.Cc[i] + 2 * dt * dotops.Cc[i]
         oldops.As[i] = oldops.As[i] + 2 * dt * dotops.As[i]
         oldops.Ac[i] = oldops.Ac[i] + 2 * dt * dotops.Ac[i]
-        oldops.N[i]  = oldops.N[i] + 2 * dt * dotops.N[i]
+        oldops.N[i] = oldops.N[i] + 2 * dt * dotops.N[i]
     end
 end
 
@@ -80,7 +80,7 @@ function ECEIDcalcdots!(dotops :: ECEIDOps, ops :: ECEIDOps,
         μ = (1.0im*ops.Cc[i] - ops.As[i]) / sbm.ωs[i]
         dotops.ρ += IOHBAR * comm(F(sbm,ops.q,i),μ)
     end
-    for i in 1:ops.No
+    Threads.@threads for i in 1:ops.No
         dotops.Cc[i] = - IOHBAR * comm(H(sbm,ops.q,ops.p),ops.Cc[i]) + sbm.ωs[i] * ops.Cs[i] + (ops.N[i] + 0.5) * comm(F(sbm,ops.q,i),ops.ρ)
         dotops.Cs[i] = - IOHBAR * comm(H(sbm,ops.q,ops.p),ops.Cs[i]) - sbm.ωs[i] * ops.Cc[i]
         dotops.Ac[i] = - IOHBAR * comm(H(sbm,ops.q,ops.p),ops.Ac[i]) + sbm.ωs[i] * ops.As[i] + 0.5 * acomm(F(sbm,ops.q,i),ops.ρ)
