@@ -49,7 +49,7 @@ end
 Ohmic spectral density
 
 """
-function ohmicJ0(ω, sbp :: OhmicSBParams)
+function ohmicJ0(ω, sbp)
     @unpack α, ωc = sbp
     (π/2)*α*ω.*exp.(-ω/ωc)
 end
@@ -59,7 +59,7 @@ end
 Oscilator theoretical density of states
 
 """
-function ρosc(ω, sbp :: OhmicSBParams)
+function ρosc(ω, sbp)
     @unpack No, ωc, ωm = sbp
     (No/ωc)*exp.(-ω/ωc)/(1-exp.(-ωm/ωc))
 end
@@ -69,7 +69,7 @@ end
 Calculate thermal ocupation numbers for the oscillators
 
 """
-function thermalns(sbm :: SBModel)
+function thermalns(sbm)
     N = Vector{Float64}(undef,sbm.No)
     for i in 1:sbm.No
         N[i] = 1.0 / (exp(HBAR * sbm.ωs[i] * sbm.β) - 1.0)
@@ -117,11 +117,10 @@ end
 Hamiltonian for an Ohmic Spin Boson Model
 
 """
-@inline function H(sbm :: SBModel, q :: Vector{Float64}, p :: Vector{Float64})
+@inline function H(sbm, q , p)
     H = sbm.ϵ * σz + sbm.Δ * σx
     for nu = 1:sbm.No
-#        H += eye * (p[nu]^2 + sbm.ωs[nu]^2 * q[nu]^2) / 2 + σz * sbm.cs[nu] * q[nu]
-        H += eye * sbm.ωs[nu]^2 * q[nu]^2 / 2 + σz * sbm.cs[nu] * q[nu]
+        H += eye * 0.5 * sbm.ωs[nu]^2 * q[nu]^2 + σz * sbm.cs[nu] * q[nu]
     end
     return H
 end
@@ -131,7 +130,7 @@ end
 Force operator for an Ohmic Spin Boson Model
 
 """
-@inline function F(sbm :: SBModel, q :: Vector{Float64}, nu :: Int64)
+@inline function F(sbm, q, nu)
     F = - eye * sbm.ωs[nu]^2 * q[nu] - σz * sbm.cs[nu]
     return F
 end
@@ -141,7 +140,7 @@ end
 Second order derivative operator for an Ohmic Spin Boson Model
 
 """
-@inline function K(sbm :: SBModel, q :: Vector{Float64}, nu :: Int64, nup :: Int64)
+@inline function K(sbm, q, nu, nup)
     if nu == nup
         K = eye * sbm.ωs[nu]^2
     else
