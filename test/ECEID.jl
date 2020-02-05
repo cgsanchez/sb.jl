@@ -20,7 +20,7 @@ function my_run()
     # Create containers starting from a localized state
     ops = ECEIDOps(SA[1.0+0.0im 0.0im; 0.0im 0.0im],sbm)
     # run dynamics
-    RunECEID!(sbm,ops,200,0.001,store!, storage)
+    RunECEID!(sbm,ops,2000,0.001,store!, storage)
     return storage.time,storage.energy
 end
 

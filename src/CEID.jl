@@ -113,28 +113,20 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
     #---------------------------------------------------------------------------
 
     # Time derivative of μ -----------------------------------------------------
-    for ν in 1:ops.No
+    Threads.@threads for ν in 1:ops.No
         dotops.μ[ν] = ops.λ[ν] + IOHBAR * comm(H(sbm,ops.q,ops.p),ops.μ[ν])
         for νp in 1:ops.No
             dotops.μ[ν] += - IOHBAR * ops.CRR[ν,νp] * comm(F(sbm,ops.q,νp),ops.ρ)
         end
-    end
-    #---------------------------------------------------------------------------
-
     # Time derivative of λ -----------------------------------------------------
-    for ν in 1:ops.No
         dotops.λ[ν] = IOHBAR * comm(H(sbm,ops.q,ops.p),ops.λ[ν])
         dotops.λ[ν] += 0.5 * acomm(F(sbm,ops.q,ν),ops.ρ) - tr(F(sbm,ops.q,ν)*ops.ρ)*ops.ρ
         for νp in 1:ops.No
             dotops.λ[ν] += - IOHBAR * ops.CPR[ν,νp] * comm(F(sbm,ops.q,νp),ops.ρ)
             dotops.λ[ν] += - 0.5 * acomm(K(sbm,ops.q,ν,νp),ops.μ[νp])
         end
-    end
-    #---------------------------------------------------------------------------
-
     # Time derivatives of mean field second order correlators ------------------
-    if !thermostat
-        for ν in 1:ops.No
+        if !thermostat
             for νp in 1:ops.No
                 dotops.CRR[ν,νp] = ops.CPR[ν,νp] + ops.CPR[νp,ν]
                 dotops.CPR[ν,νp] = ops.CPP[ν,νp] + real(tr(F(sbm,ops.q,ν)*ops.μ[νp]))
@@ -146,11 +138,11 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
                                           ops.CPR[νp,νpp] * real(tr(K(sbm,ops.q,νpp,ν)*ops.ρ))
                 end
             end
+        else
+            dotops.CRR .= 0.0
+            dotops.CPR .= 0.0
+            dotops.CPP .= 0.0
         end
-    else
-        dotops.CRR .= 0.0
-        dotops.CPR .= 0.0
-        dotops.CPP .= 0.0
     end
     #---------------------------------------------------------------------------
 
