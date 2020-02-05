@@ -75,10 +75,10 @@ Leapfrog ECEID calculate EOM RHS
 function ECEIDcalcdots!(dotops :: ECEIDOps, ops :: ECEIDOps,
                     dt :: Float64, sbm :: SBModel; thermostat = false)
 
-    ops.ρ = - IOHBAR * comm(H(sbm,ops.q,ops.p),ops.ρ)
+    dotops.ρ = - IOHBAR * comm(H(sbm,ops.q,ops.p),ops.ρ)
     for i in 1:ops.No
         μ = (1.0im*ops.Cc[i] - ops.As[i]) / sbm.ωs[i]
-        ops.ρ += IOHBAR * comm(F(sbm,ops.q,i),μ)
+        dotops.ρ += IOHBAR * comm(F(sbm,ops.q,i),μ)
     end
     for i in 1:ops.No
         dotops.Cc[i] = - IOHBAR * comm(H(sbm,ops.q,ops.p),ops.Cc[i]) + sbm.ωs[i] * ops.Cs[i] + (ops.N[i] + 0.5) * comm(F(sbm,ops.q,i),ops.ρ)
@@ -87,7 +87,7 @@ function ECEIDcalcdots!(dotops :: ECEIDOps, ops :: ECEIDOps,
         dotops.As[i] = - IOHBAR * comm(H(sbm,ops.q,ops.p),ops.As[i]) - sbm.ωs[i] * ops.Ac[i]
         λ = (1.0im*ops.Cs[i] + ops.Ac[i])
         if !thermostat
-            dotops.N[i] = tr(F(sbm,ops.q,i) * λ) / HBAR / sbm.ωs[i]
+            dotops.N[i] = real(tr(F(sbm,ops.q,i) * λ)) / HBAR / sbm.ωs[i]
         else
             dotops.N[i] = 0.0
         end
