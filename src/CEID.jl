@@ -1,4 +1,4 @@
-using sb, LinearAlgebra
+using sb, LinearAlgebra, StaticArrays
 
 # This file implements mean field many body second moment CEID
 
@@ -7,38 +7,36 @@ using sb, LinearAlgebra
 Structure to hold data for CEID dynamics
 
 """
-struct CEIDOps
+mutable struct CEIDOps
     No :: Int64
-    ρ  :: Array{Complex{Float64},2}
-    μ  :: Vector{Array{Complex{Float64},2}}
-    λ  :: Vector{Array{Complex{Float64},2}}
+    ρ  :: SArray{Tuple{2,2},Complex{Float64},2,4}
+    μ  :: Vector{SArray{Tuple{2,2},Complex{Float64},2,4}}
+    λ  :: Vector{SArray{Tuple{2,2},Complex{Float64},2,4}}
     CRR :: Array{Float64,2}
     CPR :: Array{Float64,2}
     CPP :: Array{Float64,2}
     p  :: Vector{Float64}
     q  :: Vector{Float64}
-    ke :: Vector{Float64}
+    ke :: Float64
     function CEIDOps(ρ0, sbm :: SBModel)
-        ρ = zeros(ComplexF64,2,2)
-        ρ .= ρ0
-        μ = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
-        λ = Vector{Array{Complex{Float64},2}}(undef,sbm.No)
+        μ = Vector{SArray{Tuple{2,2},Complex{Float64},2,4}}(undef,sbm.No)
+        λ = Vector{SArray{Tuple{2,2},Complex{Float64},2,4}}(undef,sbm.No)
         CRR = zeros(Float64,sbm.No,sbm.No)
         CPR = zeros(Float64,sbm.No,sbm.No)
         CPP = zeros(Float64,sbm.No,sbm.No)
         p = zeros(Float64,sbm.No)
         q = zeros(Float64,sbm.No)
-        ke = zeros(Float64,1)
+        ke = 0.0
          for ν in 1:sbm.No
-             μ[ν] = zeros(ComplexF64,2,2)
-             λ[ν] = zeros(ComplexF64,2,2)
+             μ[ν] = SA[0.0im 0.0im; 0.0im 0.0im]
+             λ[ν] = SA[0.0im 0.0im; 0.0im 0.0im]
              # Initialize CPP and CRR to expectation values at zero temperature
              # This must be changed to an arbitrary temperature initialization
              nphon = 0
              CPP[ν,ν] = (nphon+0.5) * HBAR * sbm.ωs[ν]
              CRR[ν,ν] = (nphon+0.5) * HBAR / sbm.ωs[ν]
          end
-        new(sbm.No,ρ,μ,λ,CRR,CPR,CPP,p,q,ke)
+        new(sbm.No,ρ0,μ,λ,CRR,CPR,CPP,p,q,ke)
     end
 end
 
@@ -49,17 +47,17 @@ Leapfrog bootstrap of data (CEID)
 """
 function CEIDbootstrap!(ops :: CEIDOps, oldops :: CEIDOps,
                       dotops :: CEIDOps, dt :: Float64)
-    oldops.ρ .= ops.ρ - dt * dotops.ρ
+    oldops.ρ = ops.ρ - dt * dotops.ρ
     for i in 1:ops.No
-        oldops.μ[i] .= ops.μ[i] - dt * dotops.μ[i]
-        oldops.λ[i] .= ops.λ[i] - dt * dotops.λ[i]
+        oldops.μ[i] = ops.μ[i] - dt * dotops.μ[i]
+        oldops.λ[i] = ops.λ[i] - dt * dotops.λ[i]
     end
-    oldops.CRR .= ops.CRR - dt * dotops.CRR
-    oldops.CPR .= ops.CPR - dt * dotops.CPR
-    oldops.CPP .= ops.CPP - dt * dotops.CPP
-    oldops.p .= ops.p - dt * dotops.p
-    oldops.q .= ops.q - dt * dotops.q
-    oldops.ke .= ops.ke - dt * dotops.ke
+    oldops.CRR .= ops.CRR .- dt .* dotops.CRR
+    oldops.CPR .= ops.CPR .- dt .* dotops.CPR
+    oldops.CPP .= ops.CPP .- dt .* dotops.CPP
+    oldops.p .= ops.p .- dt .* dotops.p
+    oldops.q .= ops.q .- dt .* dotops.q
+    oldops.ke = ops.ke - dt * dotops.ke
 end
 
 """
@@ -69,17 +67,17 @@ Leapfrog step forward (CEID)
 """
 function CEIDforward!(ops :: CEIDOps, oldops :: CEIDOps,
                     dotops :: CEIDOps, dt :: Float64)
-    oldops.ρ .= oldops.ρ + 2 * dt * dotops.ρ
+    oldops.ρ = oldops.ρ + 2 * dt * dotops.ρ
     for i in 1:ops.No
-        oldops.μ[i] .= oldops.μ[i] + 2 * dt * dotops.μ[i]
-        oldops.λ[i] .= oldops.λ[i] + 2 * dt * dotops.λ[i]
+        oldops.μ[i] = oldops.μ[i] + 2 * dt * dotops.μ[i]
+        oldops.λ[i]= oldops.λ[i] + 2 * dt * dotops.λ[i]
     end
-    oldops.CRR .= oldops.CRR + 2 * dt * dotops.CRR
-    oldops.CPR .= oldops.CPR + 2 * dt * dotops.CPR
-    oldops.CPP .= oldops.CPP + 2 * dt * dotops.CPP
-    oldops.p .= oldops.p + 2 * dt * dotops.p
-    oldops.q .= oldops.q + 2 * dt * dotops.q
-    oldops.ke .= oldops.ke + 2 * dt * dotops.ke
+    oldops.CRR .= oldops.CRR .+ (2 * dt) .* dotops.CRR
+    oldops.CPR .= oldops.CPR .+ (2 * dt) .* dotops.CPR
+    oldops.CPP .= oldops.CPP .+ (2 * dt) .* dotops.CPP
+    oldops.p .= oldops.p .+ (2 * dt) .* dotops.p
+    oldops.q .= oldops.q .+ (2 * dt) .* dotops.q
+    oldops.ke = oldops.ke + 2 * dt * dotops.ke
 end
 
 """
@@ -90,7 +88,6 @@ Leapfrog CEID calculate EOM RHS
 function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
                     dt :: Float64, sbm :: SBModel; thermostat = false)
 
-@inbounds begin
     # Time derivatives of generalized coordinates and momenta ------------------
     fbar = zeros(Float64,sbm.No)
     for ν in 1:ops.No
@@ -104,45 +101,32 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
     #---------------------------------------------------------------------------
 
     # Time derivative of ρ -----------------------------------------------------
-    tempρ = IOHBAR * comm(H(sbm,ops.q,ops.p),ops.ρ)
+    dotops.ρ = IOHBAR * comm(H(sbm,ops.q,ops.p),ops.ρ)
     for ν in 1:ops.No
-        tempρ += - IOHBAR * comm(F(sbm,ops.q,ν),ops.μ[ν])
+        dotops.ρ += - IOHBAR * comm(F(sbm,ops.q,ν),ops.μ[ν])
     end
     for ν in 1:ops.No
         for νp in 1:ops.No
-            tempρ += 0.5 * IOHBAR * ops.CRR[ν,νp] * comm(K(sbm,ops.q,ν,νp),ops.ρ)
+            dotops.ρ += 0.5 * IOHBAR * ops.CRR[ν,νp] * comm(K(sbm,ops.q,ν,νp),ops.ρ)
         end
     end
-    # Using a temporary variable to set the values of ρ since CEIDOps struct is inmutable
-    dotops.ρ .= tempρ
     #---------------------------------------------------------------------------
 
     # Time derivative of μ -----------------------------------------------------
-    for ν in 1:ops.No
-        tempμ = ops.λ[ν] + IOHBAR * comm(H(sbm,ops.q,ops.p),ops.μ[ν])
+    Threads.@threads for ν in 1:ops.No
+        dotops.μ[ν] = ops.λ[ν] + IOHBAR * comm(H(sbm,ops.q,ops.p),ops.μ[ν])
         for νp in 1:ops.No
-            tempμ += - IOHBAR * ops.CRR[ν,νp] * comm(F(sbm,ops.q,νp),ops.ρ)
+            dotops.μ[ν] += - IOHBAR * ops.CRR[ν,νp] * comm(F(sbm,ops.q,νp),ops.ρ)
         end
-        dotops.μ[ν] .= tempμ
-    end
-    #---------------------------------------------------------------------------
-
     # Time derivative of λ -----------------------------------------------------
-    for ν in 1:ops.No
-        tempλ = IOHBAR * comm(H(sbm,ops.q,ops.p),ops.λ[ν])
-#        tempλ += 0.5 * acomm(F(sbm,ops.q,ν),ops.ρ) - fbar[ν] * ops.ρ
-        tempλ += 0.5 * acomm(F(sbm,ops.q,ν),ops.ρ) - tr(F(sbm,ops.q,ν)*ops.ρ)*ops.ρ
+        dotops.λ[ν] = IOHBAR * comm(H(sbm,ops.q,ops.p),ops.λ[ν])
+        dotops.λ[ν] += 0.5 * acomm(F(sbm,ops.q,ν),ops.ρ) - tr(F(sbm,ops.q,ν)*ops.ρ)*ops.ρ
         for νp in 1:ops.No
-            tempλ += - IOHBAR * ops.CPR[ν,νp] * comm(F(sbm,ops.q,νp),ops.ρ)
-            tempλ += - 0.5 * acomm(K(sbm,ops.q,ν,νp),ops.μ[νp])
+            dotops.λ[ν] += - IOHBAR * ops.CPR[ν,νp] * comm(F(sbm,ops.q,νp),ops.ρ)
+            dotops.λ[ν] += - 0.5 * acomm(K(sbm,ops.q,ν,νp),ops.μ[νp])
         end
-        dotops.λ[ν] .= tempλ
-    end
-    #---------------------------------------------------------------------------
-
     # Time derivatives of mean field second order correlators ------------------
-    if !thermostat
-        for ν in 1:ops.No
+        if !thermostat
             for νp in 1:ops.No
                 dotops.CRR[ν,νp] = ops.CPR[ν,νp] + ops.CPR[νp,ν]
                 dotops.CPR[ν,νp] = ops.CPP[ν,νp] + real(tr(F(sbm,ops.q,ν)*ops.μ[νp]))
@@ -154,26 +138,24 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
                                           ops.CPR[νp,νpp] * real(tr(K(sbm,ops.q,νpp,ν)*ops.ρ))
                 end
             end
+        else
+            dotops.CRR .= 0.0
+            dotops.CPR .= 0.0
+            dotops.CPP .= 0.0
         end
-    else
-        dotops.CRR .= 0.0
-        dotops.CPR .= 0.0
-        dotops.CPP .= 0.0
     end
     #---------------------------------------------------------------------------
 
     # Time derivative of quantum kinetic energy --------------------------------
-    dotops.ke[1] = 0.0
+    dotops.ke = 0.0
     for ν in 1:ops.No
         for νp in 1:ops.No
-            dotops.ke[1] += real(tr(K(sbm,ops.q,ν,νp)*ops.ρ)) * ops.CPR[ν,νp] +
+            dotops.ke += real(tr(K(sbm,ops.q,ν,νp)*ops.ρ)) * ops.CPR[ν,νp] +
                             real(0.5 * IOHBAR * ops.CRR[νp,ν] *
                             tr(K(sbm,ops.q,ν,νp)*comm(H(sbm,ops.q,ops.p),ops.ρ)))
         end
     end
     #---------------------------------------------------------------------------
-
-end
 end
 
 """
@@ -199,8 +181,8 @@ The store! callback function is called at every timestep.
 """
 function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false)
 
-    dotops = CEIDOps(zm,sbm)
-    oldops = CEIDOps(zm,sbm)
+    dotops = CEIDOps(SA[0.0im 0.0im; 0.0im 0.0im],sbm)
+    oldops = CEIDOps(SA[0.0im 0.0im; 0.0im 0.0im],sbm)
 
     # Bootstrap the integrator
     sb.CEIDcalcdots!(dotops, ops , dt , sbm; thermostat = thermostat)

@@ -65,6 +65,7 @@ Ehrenfest total energy
 """
 function ehenergy(ops :: EhrenfestOps, sbm :: SBModel)
     return real(tr(H(sbm,ops.q,ops.p) * ops.ρ))
+    # KINETIC ENERGY MISSINNG HERE
 end
 
 """
