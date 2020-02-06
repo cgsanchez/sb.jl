@@ -137,13 +137,13 @@ end
 
 """
 
-Second order derivative operator for an Ohmic Spin Boson Model
+Second order derivative operator for an Ohmic Spin Boson Model (scalar)
 
 """
 @inline function K(sbm, q, nu, nup)
     if nu == nup
-        K = eye * sbm.ωs[nu]^2
+        K = sbm.ωs[nu]^2
     else
-        K = zm
+        K = 0.0
     end
 end
