@@ -13,8 +13,6 @@ function store!(storage, t, ops, sbm)
     append!(storage.sz, real(tr(sb.σz*ops.ρ)))
 end
 
-println("Running with ",Threads.nthreads()," threads.")
-
 const NSTEPS = 2500
 const DT = 0.010
 const TOL = 1.0e-11
