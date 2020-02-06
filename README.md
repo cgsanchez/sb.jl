@@ -14,6 +14,10 @@ and the Effective Correlated Electron Ion Dynamics Method described in:
 
 - Rizzi, V., Todorov, T. N., Kohanoff, J. J., & Correa, A. A. (2016). Electron-phonon thermalization in a scalable method for real-time quantum dynamics. Physical Review B, 93(2), 375. [![DOI:10.1103/PhysRevB.93.024306](https://zenodo.org/badge/DOI/10.1103/PhysRevB.93.024306.svg)](https://doi.org/10.1103/PhysRevB.93.024306)
 
+The discretization of bath modes is carried out according to the algorithm proposed in:
+
+- Wang, H. (2000). Basis set approach to the quantum dissipative dynamics: Application of the multiconfiguration time-dependent Hartree method to the spin-boson problem. Journal of Chemical Physics, 113(22), 9948–9956. [![DOI:10.1103/PhysRevB.93.024306](https://zenodo.org/badge/DOI/10.1063/1.1323746.svg)](http://doi.org/10.1063/1.1323746)
+
 ## Supporting and citing
 
 The software in this repository was developed as part of academic research. If you use the software in this repository as part of your research, teaching, or other activities, we would be grateful if you could cite our work.
