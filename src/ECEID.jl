@@ -31,6 +31,8 @@ mutable struct ECEIDOps
         end
         new(sbm.No,ρ0,Cs,Cc,As,Ac,N,p,q)
     end
+
+    return nothing
 end
 
 """
@@ -48,6 +50,8 @@ function ECEIDbootstrap!(ops :: ECEIDOps, oldops :: ECEIDOps,
         oldops.Ac[i] = ops.Ac[i] - dt * dotops.Ac[i]
         oldops.N[i]  = ops.N[i] - dt * dotops.N[i]
     end
+
+    return nothing
 end
 
 """
@@ -65,6 +69,8 @@ function ECEIDforward!(ops :: ECEIDOps, oldops :: ECEIDOps,
         oldops.Ac[i] = oldops.Ac[i] + 2 * dt * dotops.Ac[i]
         oldops.N[i] = oldops.N[i] + 2 * dt * dotops.N[i]
     end
+
+    return nothing
 end
 
 """
@@ -92,6 +98,8 @@ function ECEIDcalcdots!(dotops :: ECEIDOps, ops :: ECEIDOps,
             dotops.N[i] = 0.0
         end
     end
+
+    return nothing
 end
 
 """

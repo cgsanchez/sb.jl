@@ -58,6 +58,8 @@ function CEIDbootstrap!(ops :: CEIDOps, oldops :: CEIDOps,
     oldops.p .= ops.p .- dt .* dotops.p
     oldops.q .= ops.q .- dt .* dotops.q
     oldops.ke = ops.ke - dt * dotops.ke
+
+    return nothing
 end
 
 """
@@ -78,6 +80,8 @@ function CEIDforward!(ops :: CEIDOps, oldops :: CEIDOps,
     oldops.p .= oldops.p .+ (2 * dt) .* dotops.p
     oldops.q .= oldops.q .+ (2 * dt) .* dotops.q
     oldops.ke = oldops.ke + 2 * dt * dotops.ke
+
+    return nothing
 end
 
 """
@@ -148,6 +152,8 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
         end
     end
     #---------------------------------------------------------------------------
+
+    return nothing
 end
 
 
@@ -227,6 +233,8 @@ function CEIDcalcdots_full!(dotops :: CEIDOps, ops :: CEIDOps,
         end
     end
     #---------------------------------------------------------------------------
+
+    return nothing
 end
 
 
@@ -281,7 +289,7 @@ function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false, knondiag
         store!(storage,t,ops,sbm)
     end
 
-    return 1
+    return nothing
 end
 
 #

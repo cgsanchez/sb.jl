@@ -30,6 +30,8 @@ function ehbootstrap!(ops :: EhrenfestOps, oldops :: EhrenfestOps,
     oldops.ρ .= ops.ρ - dt * dotops.ρ
     oldops.p .= ops.p - dt * dotops.p
     oldops.q .= ops.q - dt * dotops.q
+
+    return nothing
 end
 
 """
@@ -42,6 +44,8 @@ function ehforward!(ops :: EhrenfestOps, oldops :: EhrenfestOps,
     oldops.ρ .= oldops.ρ + 2 * dt * dotops.ρ
     oldops.p .= oldops.p + 2 * dt * dotops.p
     oldops.q .= oldops.q + 2 * dt * dotops.q
+
+    return nothing
 end
 
 """
@@ -56,6 +60,8 @@ function ehcalcdots!(dotops :: EhrenfestOps, ops :: EhrenfestOps,
         dotops.p[i] = real(tr(F(sbm,ops.q,i)*ops.ρ))
         dotops.q[i] = ops.p[i]
     end
+
+    return nothing
 end
 
 """
@@ -96,5 +102,6 @@ function RunEhrenfest!(sbm, ops, nsteps, dt, store!, storage)
         (ops,oldops) = (oldops,ops)
         store!(storage,t,ops,sbm)
     end
-    return 1
+    
+    return nothing
 end
