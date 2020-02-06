@@ -82,10 +82,81 @@ end
 
 """
 
-Leapfrog CEID calculate EOM RHS
+Calculate CEID EOM RHS for K with no coupling between oscillators
 
 """
 function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
+                    dt :: Float64, sbm :: SBModel; thermostat = false)
+
+    # Time derivatives of generalized coordinates and momenta ------------------
+    fbar = zeros(Float64,sbm.No)
+    for ν in 1:ops.No
+        fbar[ν] = real(tr(F(sbm,ops.q,ν)*ops.ρ)) -
+                  real(tr(K(sbm,ops.q,ν,ν)*ops.μ[ν]))
+        dotops.p[ν] = fbar[ν]
+        dotops.q[ν] = ops.p[ν]
+    end
+    #---------------------------------------------------------------------------
+
+    # Time derivative of ρ -----------------------------------------------------
+    dotops.ρ = IOHBAR * comm(H(sbm,ops.q,ops.p),ops.ρ)
+    for ν in 1:ops.No
+        dotops.ρ += - IOHBAR * comm(F(sbm,ops.q,ν),ops.μ[ν]) +
+                    0.5 * IOHBAR * ops.CRR[ν,ν] * comm(K(sbm,ops.q,ν,ν),ops.ρ)
+    end
+    #---------------------------------------------------------------------------
+
+    # Time derivative of μ -----------------------------------------------------
+    Threads.@threads for ν in 1:ops.No
+        dotops.μ[ν] = ops.λ[ν] + IOHBAR * comm(H(sbm,ops.q,ops.p),ops.μ[ν])
+        for νp in 1:ops.No
+            dotops.μ[ν] += - IOHBAR * ops.CRR[ν,νp] * comm(F(sbm,ops.q,νp),ops.ρ)
+        end
+    # Time derivative of λ -----------------------------------------------------
+        dotops.λ[ν] = IOHBAR * comm(H(sbm,ops.q,ops.p),ops.λ[ν]) +
+                      0.5 * acomm(F(sbm,ops.q,ν),ops.ρ) - tr(F(sbm,ops.q,ν)*ops.ρ)*ops.ρ -
+                      0.5 * acomm(K(sbm,ops.q,ν,ν),ops.μ[ν])
+        for νp in 1:ops.No
+            dotops.λ[ν] += - IOHBAR * ops.CPR[ν,νp] * comm(F(sbm,ops.q,νp),ops.ρ)
+        end
+    # Time derivatives of mean field second order correlators ------------------
+        if !thermostat
+            for νp in 1:ops.No
+                dotops.CRR[ν,νp] = ops.CPR[ν,νp] + ops.CPR[νp,ν]
+                dotops.CPR[ν,νp] = ops.CPP[ν,νp] + real(tr(F(sbm,ops.q,ν)*ops.μ[νp])) -
+                                   ops.CRR[ν,νp] * real(tr(K(sbm,ops.q,ν,ν)*ops.ρ))
+                dotops.CPP[ν,νp] = real(tr(F(sbm,ops.q,ν)*ops.λ[νp])) +
+                                   real(tr(F(sbm,ops.q,νp)*ops.λ[ν])) -
+                                   ops.CPR[ν,νp] * real(tr(K(sbm,ops.q,νp,νp)*ops.ρ)) -
+                                   ops.CPR[νp,ν] * real(tr(K(sbm,ops.q,ν,ν)*ops.ρ))
+            end
+        else
+            dotops.CRR .= 0.0
+            dotops.CPR .= 0.0
+            dotops.CPP .= 0.0
+        end
+    end
+    #---------------------------------------------------------------------------
+
+    # Time derivative of quantum kinetic energy --------------------------------
+    dotops.ke = 0.0
+    for ν in 1:ops.No
+        for νp in 1:ops.No
+            dotops.ke += real(tr(K(sbm,ops.q,ν,νp)*ops.ρ)) * ops.CPR[ν,νp] +
+                            real(0.5 * IOHBAR * ops.CRR[νp,ν] *
+                            tr(K(sbm,ops.q,ν,νp)*comm(H(sbm,ops.q,ops.p),ops.ρ)))
+        end
+    end
+    #---------------------------------------------------------------------------
+end
+
+
+"""
+
+Calculate CEID EOM RHS
+
+"""
+function CEIDcalcdots_full!(dotops :: CEIDOps, ops :: CEIDOps,
                     dt :: Float64, sbm :: SBModel; thermostat = false)
 
     # Time derivatives of generalized coordinates and momenta ------------------
@@ -158,6 +229,7 @@ function CEIDcalcdots!(dotops :: CEIDOps, ops :: CEIDOps,
     #---------------------------------------------------------------------------
 end
 
+
 """
 
 CEID total energy
@@ -179,13 +251,17 @@ initial condition provided in ops for nsteps of dt.
 The store! callback function is called at every timestep.
 
 """
-function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false)
+function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false, knondiag = false)
 
     dotops = CEIDOps(SA[0.0im 0.0im; 0.0im 0.0im],sbm)
     oldops = CEIDOps(SA[0.0im 0.0im; 0.0im 0.0im],sbm)
 
     # Bootstrap the integrator
-    sb.CEIDcalcdots!(dotops, ops , dt , sbm; thermostat = thermostat)
+    if !knondiag
+        sb.CEIDcalcdots!(dotops, ops, dt, sbm; thermostat = thermostat)
+    else
+        sb.CEIDcalcdots_full!(dotops, ops, dt, sbm; thermostat = thermostat)
+    end
     sb.CEIDbootstrap!(ops,oldops,dotops,dt)
 
     # call results storage function at t = 0
@@ -195,7 +271,11 @@ function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false)
     # integrate
     for i in 1:nsteps-1
         t = i*dt
-        sb.CEIDcalcdots!(dotops,ops,dt,sbm; thermostat = thermostat)
+        if !knondiag
+            sb.CEIDcalcdots!(dotops, ops, dt, sbm; thermostat = thermostat)
+        else
+            sb.CEIDcalcdots_full!(dotops, ops, dt, sbm; thermostat = thermostat)
+        end
         sb.CEIDforward!(ops,oldops,dotops,dt)
         (ops,oldops) = (oldops,ops)
         store!(storage,t,ops,sbm)
