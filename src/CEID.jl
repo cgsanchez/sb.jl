@@ -30,11 +30,14 @@ mutable struct CEIDOps
          for ν in 1:sbm.No
              μ[ν] = SA[0.0im 0.0im; 0.0im 0.0im]
              λ[ν] = SA[0.0im 0.0im; 0.0im 0.0im]
-             # Initialize CPP and CRR to expectation values at zero temperature
-             # This must be changed to an arbitrary temperature initialization
-             nphon = 0
-             CPP[ν,ν] = (nphon+0.5) * HBAR * sbm.ωs[ν]
-             CRR[ν,ν] = (nphon+0.5) * HBAR / sbm.ωs[ν]
+             if sbm.β == Inf # zero temperature
+                 CPP[ν,ν] = 0.5 * HBAR * sbm.ωs[ν]
+                 CRR[ν,ν] = 0.5 * HBAR / sbm.ωs[ν]
+             else
+                 hav = HBAR*sbm.ωs[ν]*(0.5 + 1.0/(exp(HBAR*sbm.ωs[ν]*sbm.β)))
+                 CPP[ν,ν] = hav
+                 CRR[ν,ν] = hav / sbm.ωs[ν]^2
+             end
          end
         new(sbm.No,ρ0,μ,λ,CRR,CPR,CPP,p,q,ke)
     end
