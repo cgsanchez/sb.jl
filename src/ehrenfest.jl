@@ -70,8 +70,11 @@ Ehrenfest total energy
 
 """
 function ehenergy(ops :: EhrenfestOps, sbm :: SBModel)
-    return real(tr(H(sbm,ops.q,ops.p) * ops.ρ))
-    # KINETIC ENERGY MISSINNG HERE
+    energy =  real(tr(H(sbm,ops.q,ops.p) * ops.ρ))
+    for ν in 1:ops.No
+        energy += 0.5 * ops.p[ν]^2
+    end
+    return energy
 end
 
 """
@@ -102,6 +105,6 @@ function RunEhrenfest!(sbm, ops, nsteps, dt, store!, storage)
         (ops,oldops) = (oldops,ops)
         store!(storage,t,ops,sbm)
     end
-    
+
     return nothing
 end

@@ -28,4 +28,4 @@ ts, energies = my_run(false)
 @test mean(energies .- energies[1]) < 1e-13
 
 ts, energies = my_run(true)
-@test (energies[2000] .- energies[1]) < 0.0
+@test (energies[2000] - energies[1]) < 0.0

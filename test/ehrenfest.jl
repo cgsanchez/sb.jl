@@ -28,4 +28,4 @@ end
 
 ts, energies = integrate()
 
-@test mean(energies) < 0.003
+@test mean(energies.-energies[1]) < 0.003
