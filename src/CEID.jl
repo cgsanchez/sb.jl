@@ -34,7 +34,7 @@ mutable struct CEIDOps
                  CPP[ν,ν] = 0.5 * HBAR * sbm.ωs[ν]
                  CRR[ν,ν] = 0.5 * HBAR / sbm.ωs[ν]
              else
-                 hav = HBAR*sbm.ωs[ν]*(0.5 + 1.0/(exp(HBAR*sbm.ωs[ν]*sbm.β)))
+                 hav = HBAR*sbm.ωs[ν]*(0.5 + 1.0/(exp(HBAR*sbm.ωs[ν]*sbm.β)-1.0))
                  CPP[ν,ν] = hav
                  CRR[ν,ν] = hav / sbm.ωs[ν]^2
              end
