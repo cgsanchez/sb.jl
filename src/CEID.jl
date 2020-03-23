@@ -277,7 +277,7 @@ function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false, knondiag
 
     # call results storage function at t = 0
     t = 0.0
-    store!(storage,t,ops,sbm)
+    store!(storage,t,ops,dotops,sbm)
 
     # integrate
     for i in 1:nsteps-1
@@ -289,7 +289,7 @@ function RunCEID!(sbm,ops,nsteps,dt,store!,storage; thermostat = false, knondiag
         end
         sb.CEIDforward!(ops,oldops,dotops,dt)
         (ops,oldops) = (oldops,ops)
-        store!(storage,t,ops,sbm)
+        store!(storage,t,ops,dotops,sbm)
     end
 
     return nothing

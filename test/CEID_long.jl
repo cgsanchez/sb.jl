@@ -8,7 +8,7 @@ struct storages
     end
 end
 
-function store!(storage, t, ops, sbm)
+function store!(storage, t, ops, dotops, sbm)
     append!(storage.ts, t)
     append!(storage.sz, real(tr(sb.σz*ops.ρ)))
 end
