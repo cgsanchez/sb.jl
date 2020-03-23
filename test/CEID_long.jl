@@ -65,3 +65,5 @@ refdata = readdlm("CEID_ref_results/fig6_CEID.dat")[:,2]
 sz = my_run(SBModel(OhmicSBParams(ϵ = 0.0, Δ = 1.0, ωc = 2.5, α = 0.09, No = 60, β = Inf)))
 refdata = readdlm("CEID_ref_results/fig7_CEID.dat")[:,2]
 @test TOL > sum(abs.(refdata-sz))
+
+# 
