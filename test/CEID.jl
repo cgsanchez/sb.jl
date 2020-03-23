@@ -8,7 +8,7 @@ struct storages
     end
 end
 
-function store!(storage, t, ops, sbm)
+function store!(storage, t, ops, dotops, sbm)
     append!(storage.time,t)
     append!(storage.energy  ,sb.CEIDenergy(ops,sbm))
 end
